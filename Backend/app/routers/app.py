@@ -39,5 +39,5 @@ def get_wallet(address: str)->str:
 
 
 if __name__ == "__main__":
-    uvicorn.run("wallet:app", host=host, port=port, reload=True)
+    uvicorn.run("app:app", host=host, port=port, reload=True)
     
