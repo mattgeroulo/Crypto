@@ -2,7 +2,7 @@ from fastapi import FastAPI, Request
 import uvicorn
 import logging
 import time
-
+import requests
 app = FastAPI()
 
 logger = logging.getLogger('uvicorn')
@@ -33,9 +33,62 @@ def help():
 
 
 @app.get("/wallet/{address}")
-def get_wallet(address: str)->str:
+def get_wallet(address: str)->list:
     
-    return address
+    return get_wallet_summary(address)
+
+
+
+def get_wallet_summary(address: str)-> list:
+    url =f'https://blockstream.info/api/address/{address}'
+    data = requests.get(url)
+    if data.status_code ==200:
+        response = data.json()
+        chain_stats = response.get('chain_stats','')
+        mempool_stats = response.get('mempool_stats','')
+        funded = chain_stats.get("funded_txo_sum", 0)
+        spent = chain_stats.get("spent_txo_sum",0)
+        balance_sats = funded - spent
+        balance_bitcoin_confirmed = balance_sats /100_000_000
+        logger.info(f'Confirmed bitcoin amount: {balance_bitcoin_confirmed}')
+        #compute same logic for mempool
+        funded_mempool = mempool_stats.get("funded_txo_sum", 0)
+        spent_mempool = mempool_stats.get("spent_txo_sum",0)
+        balance_sats_mempool = funded_mempool - spent_mempool
+        balance_bitcoin_unconfirmed= balance_sats_mempool /100_000_000
+        logger.info(f'Unconfirmed bitcoin amount: {balance_bitcoin_unconfirmed}')
+        #=================#
+    transaction_url = f'https://blockstream.info/api/address/{address}/txs'
+    transactions = requests.get(transaction_url)
+    wallet_transactions=[]
+    if transactions.status_code==200:
+        data = transactions.json()
+        wallet_transactions = data[:10]
+        #print(data[0].keys())
+   # print(data[0]["vout"][0])
+    #print(data[0]["vin"][0])
+    #print(wallet_transactions)
+
+    final_wallet=[] 
+    for tx in wallet_transactions:
+        value_for_address_vout=0
+        value_for_address_vin=0
+        for output in tx['vout']:
+            
+            if output.get('scriptpubkey_address')==address:
+                value_for_address_vout +=output['value']     
+        for input in tx['vin']:
+            prevout = input.get('prevout')
+            if prevout and prevout.get('scriptpubkey_address')==address:
+                value_for_address_vin+= input['prevout']['value']
+        status = tx.get('status',{})
+        net = value_for_address_vout - value_for_address_vin
+        final_wallet.append({'txid': tx['txid'],'incoming':value_for_address_vout,'outgoing':value_for_address_vin,'net':net, 'status':status})
+    logger.info(f'Final Wallet: {final_wallet}')        
+    logger.info(f'Value for address vin: {value_for_address_vin}')
+    logger.info(f'Value for address vout: {value_for_address_vout}')
+    return final_wallet
+
 
 
 if __name__ == "__main__":
