@@ -1,4 +1,5 @@
 from fastapi import FastAPI, Request
+from fastapi.middleware.cors import CORSMiddleware
 import uvicorn
 import logging
 import time
@@ -8,7 +9,13 @@ app = FastAPI()
 logger = logging.getLogger('uvicorn')
 host="0.0.0.0"
 port = 8000
-
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 
 @app.middleware("http")
 async def log_requests(request:Request, call_next):
