@@ -1,0 +1,20 @@
+.Tile{
+    display:flex;
+    min-height:125px;
+    outline:4px solid rgba(8, 20, 199, 0.699);
+    background-color:rgb(143, 143, 229);
+    color:white;
+    border-radius:2px;
+    overflow:hidden;
+    flex-direction:column;
+}
+.Header{
+    min-height:20px;
+    display:flex;
+    outline:none;
+    font-weight:bold;
+    font-size: 24px;
+    margin-left:10px;
+    margin-top:10px;
+    flex-grow:0;
+}

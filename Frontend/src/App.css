@@ -17,7 +17,7 @@
     
 }
 .Docked-Nav:hover{
-    outline:4px solid rgba(8, 20, 199, 0.699);;
+    outline:4px solid rgba(8, 20, 199, 0.699);
 }
 .Docked-Nav.Closed{
  width:100px;
