@@ -1,16 +1,20 @@
+import "./Tile.css";
+import { motion, AnimatePresence } from "framer-motion";
 
-import "./Tile.css"
-import {useState} from 'react'
-export default function Tile(props){
-    
-    return(
-        props.isVisible?
-        <div className="Tile">
-            <div className="Header">
-                {props.text}
-            </div>
-        </div>
-        :
-        <div>default</div>
+export default function Tile(props) {
+  return (
+    props.isVisible && (
+      <motion.div
+        className="Tile"
+        onClick={props.onClick}
+        initial={{ opacity: 0, scale: 0.95 }}
+        animate={{ opacity: 1, scale: 1 }}
+        exit={{ opacity: 0, scale: 0.95 }}
+        
+        transition={{ duration: 0.4, ease: "easeInOut" }}
+      >
+        <div className="Header">{props.text}</div>
+      </motion.div>
     )
+  );
 }

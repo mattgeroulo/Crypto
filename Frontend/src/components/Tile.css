@@ -1,12 +1,20 @@
 .Tile{
     display:flex;
     min-height:125px;
-    outline:4px solid rgba(8, 20, 199, 0.699);
+    outline:2px solid rgba(8, 20, 199, 0.699);
     background-color:rgb(143, 143, 229);
     color:white;
     border-radius:2px;
     overflow:hidden;
     flex-direction:column;
+    
+    margin-top:10px
+}
+
+.Tile:hover{
+    
+    outline:4px solid rgba(8, 20, 199, 0.699);
+    
 }
 .Header{
     min-height:20px;

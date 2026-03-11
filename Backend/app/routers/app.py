@@ -4,11 +4,17 @@ import uvicorn
 import logging
 import time
 import requests
+from pydantic import BaseModel
 app = FastAPI()
 
 logger = logging.getLogger('uvicorn')
 host="0.0.0.0"
 port = 8000
+
+class TileRequest(BaseModel):
+    text:str
+
+
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],
@@ -44,7 +50,16 @@ def get_wallet(address: str)->list:
     
     return get_wallet_summary(address)
 
-
+@app.post("/tile_click")
+def tile_click(body: TileRequest):
+    floors={"Floor 1":[{"text":"Test Floor 1", "isVisible":True},{"text":"F1 autostore", "isVisible":True}],
+            "Floor 2":[{"text":"Test Floor 2", "isVisible":True}], 
+            "Floor 3":[{"text":"Test Floor 3", "isVisible":True}],
+            "Ground Floor":[{"text":"Test Ground Floor", "isVisible":True}]}
+    return floors[body.text]
+@app.get("/getTiles")
+def get_tiles():
+    return [{"text":"Floor 1", "isVisible":True},{"text":"Floor 2", "isVisible":True},{"text":"Floor 3", "isVisible":True},{"text":"Ground Floor", "isVisible":True}]
 
 def get_wallet_summary(address: str)-> list:
     url =f'https://blockstream.info/api/address/{address}'
