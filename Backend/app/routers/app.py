@@ -92,6 +92,8 @@ def get_wallet_summary(address: str)-> list:
     #print(wallet_transactions)
 
     final_wallet=[] 
+    value_for_address_vout=0
+    value_for_address_vin=0
     for tx in wallet_transactions:
         value_for_address_vout=0
         value_for_address_vin=0

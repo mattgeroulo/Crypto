@@ -13,7 +13,7 @@ export default function Tile(props) {
         
         transition={{ duration: 0.4, ease: "easeInOut" }}
       >
-        <div className="Header">{props.text}</div>
+        <div className="Tile Header">{props.text}</div>
       </motion.div>
     )
   );
