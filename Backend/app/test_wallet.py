@@ -39,7 +39,7 @@ if response.status_code==200:
     
     
     
-def get_wallet_summary(address: str)-> dict:
+def get_wallet_summary(address: str)-> list:
     url =f'https://blockstream.info/api/address/{address}'
     data = requests.get(url)
     if data.status_code ==200:
@@ -86,5 +86,6 @@ def get_wallet_summary(address: str)-> dict:
     print(final_wallet)        
     print(value_for_address_vin)
     print(value_for_address_vout)
+    return final_wallet
 get_wallet_summary(address)  
     

@@ -21,8 +21,14 @@
     display:flex;
     outline:none;
     font-weight:bold;
-    font-size: 24px;
+    font-size: 14px;
     margin-left:10px;
     margin-top:10px;
     flex-grow:0;
+    word-break: break-all;
+    overflow-wrap: break-word;
+    background-color: inherit;
+}
+.Tile.Block{
+    background-color:orange;
 }

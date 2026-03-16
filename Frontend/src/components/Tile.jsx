@@ -5,7 +5,7 @@ export default function Tile(props) {
   return (
     props.isVisible && (
       <motion.div
-        className="Tile"
+        className={props.className || "Tile"}
         onClick={props.onClick}
         initial={{ opacity: 0, scale: 0.95 }}
         animate={{ opacity: 1, scale: 1 }}
@@ -13,7 +13,7 @@ export default function Tile(props) {
         
         transition={{ duration: 0.4, ease: "easeInOut" }}
       >
-        <div className="Tile Header">{props.text}</div>
+        <div className={"Tile Header"}>{props.text}</div>
       </motion.div>
     )
   );

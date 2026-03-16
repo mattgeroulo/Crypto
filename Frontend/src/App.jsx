@@ -48,7 +48,7 @@ export default function App() {
 
   return (
     <div className="Layout" style={{backgroundColor:backgroundcolor}}>
-      <div className="Header">Header
+      <div className="Header NavBar">Header
         <div className="Header Button">
           <button onClick= {()=>backgroundcolor=="white"?setBackgroundColor("black"):setBackgroundColor("white")}>Change Mode</button>
           <button onClick= {()=>navigate("/Blockchain")}>Blockchain</button>
