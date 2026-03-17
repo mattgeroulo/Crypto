@@ -62,27 +62,42 @@ def tile_click(body: TileRequest):
 @app.get("/getTiles")
 def get_tiles():
     return [{"text":"Floor 1", "isVisible":True},{"text":"Floor 2", "isVisible":True},{"text":"Floor 3", "isVisible":True},{"text":"Ground Floor", "isVisible":True}]
+
+
+#returns hash at blockheight
 @app.get("/block/{blockHeight}")
 def get_block(blockHeight: int)->dict:
     return blockWalk(blockHeight)
 
+@app.get('/rawblock/{hash}')
+def getRawBlock(hash):
+    try:
+        url = requests.get(f'https://blockchain.info/rawblock/{hash}')
+        if url.status_code==200:
+            data = url.json()
+            return data
+    except Exception as e:
+        logger.error(f"[getRawBlock]Error: {e}")
 
 def blockWalk(blockHeight: int)->dict:
-    url = f'https://blockchain.info/block-height/{blockHeight}?format=json'
-    data = requests.get(url)
-    if data.status_code==200:
-        data = data.json()
-        blocks = data.get("blocks")
-        if blocks:
-            return blocks[0]
-        return []
+    try:
+        url = f'https://blockstream.info/api/blocks/{blockHeight}'
+        data = requests.get(url)
+        if data.status_code==200:
+            data = data.json()
+            if data:
+                return data[0]
+            else:
+                return []
+    except Exception as e:
+        print(f"[blockWalk] Error: {e}")
 
-@app.get("/transaction/{blockHash}")
-def get_transactions(blockHash):
-    url = requests.get(f'https://blockchain.info/rawblock/{blockHash}')
+@app.get("/transactions/{blockHash}")
+def get_transactions(blockHash)->list:
+    url = requests.get(f'https://blockstream.info/api/block/{blockHash}/txids')
     if url.status_code==200:
         data = url.json()
-        return data['tx']
+        return data
 
 def get_wallet_summary(address: str)-> list:
     url =f'https://blockstream.info/api/address/{address}'

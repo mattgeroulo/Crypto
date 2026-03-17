@@ -11,17 +11,48 @@ export default function Blockchain() {
   const [address, setAddress] = useState([
     "1A1zP1eP5QGefi2DMPTfTL5SLmv7DivfNa",
   ]);
+  const [hash,setHash] = useState("0000000067a97a2a37b8f190a17f0221e9c3f4fa824ddffdc2e205eae834c8d7")
   const navigate = useNavigate();
-  const [blockUpdater,setBlockUpdater]=useState(true)
+  
   useEffect(() => {
     fetch(`http://localhost:8000/wallet/${address}`)
       .then((res) => res.json())
       .then((json) => {
-        setBlocks(json);
-        console.log(blocks);
+        const normalized =normalizeData(json);
+        setBlocks(normalized);
+        console.log(normalized);
       });
-  }, [address,blockUpdater]);
+  }, [address]);
+  //we want this to update the blocks list with a list of transactions on this hash value
+  useEffect(()=>{
+    fetch(`http://localhost:8000/transactions/${hash}`).then(res=>res.json()).then(json=>{
+      const normalized =normalizeData(json);setBlocks(normalized); console.log(`json transactions: ${JSON.stringify(json)}`)
+    })
+  },[hash])
+  function normalizeData(json){
+    return json.map((item) => {
+    if (typeof item === "string") {
+      return {
+        txid: item,
+        incoming: null,
+        outgoing: null,
+        net: null,
+        status: null,
+        isVisible: true,
+      };
+    }
 
+    return {
+      txid: item.txid ?? item.hash ?? item.id ?? "",
+      incoming: item.incoming ?? null,
+      outgoing: item.outgoing ?? null,
+      net: item.net ?? null,
+      status: item.status ?? null,
+      isVisible: item.isVisible ?? true,
+    };
+  });
+    
+  }
   function setBlockHeight(height) {
     try {
       const parsed = parseInt(height, 10);
@@ -34,21 +65,16 @@ export default function Blockchain() {
       fetch(`http://localhost:8000/block/${blockHeight}`)
         .then((res) => res.json())
         .then((json) => {
-          console.log(
-            `Here are the transactions on block height of ${blockHeight}: ${JSON.stringify(blocks, null, 2)}`,
-          );
-         
-          console.log("Starting tile change in setBlockHeight")
-         
-              
-          console.log(`json here: ${JSON.stringify(json)}`)
+          console.log("Starting tile change in setBlockHeight");
+
+          console.log(`json here: ${JSON.stringify(json)}`);
           
           setBitcoinBlock([json]);
-          //setBlocks([]);
+          setHash(json['id'])
         });
-        //Here on 3/15, need to update blocks to be changed on this request, need to take out update on address logic because its wrong
-        //we are seeing transactions id's of a single bitcoin address, changing it to show block hash + transactions on that block
-        fetch(`http://localhost:8000/transactions/${json['hash']}`).then(res=>res.json()).then(json=>{setBlocks[json];setBlockUpdater(!blockUpdater)})
+      //Here on 3/15, need to update blocks to be changed on this request, need to take out update on address logic because its wrong
+      //we are seeing transactions id's of a single bitcoin address, changing it to show block hash + transactions on that block
+      
     } catch (err) {
       console.error(err);
     }
@@ -98,16 +124,16 @@ export default function Blockchain() {
         />
       </div>
       {bitcoinBlock
-            ? bitcoinBlock.map((tile, index) => (
-                <Tile
-                  key={tile.hash}
-                  text={tile.hash}
-                  isVisible={tile.isVisible ?? true}
-                  onClick={() => handleTileClick(tile)}
-                  className="Tile Block"
-                />
-              ))
-            : console.log("error")}
+        ? bitcoinBlock.map((tile, index) => (
+            <Tile
+              key={tile.id ||index}
+              text={`Hash: ${tile.id}`}
+              isVisible={true}
+              onClick={() => handleTileClick(tile)}
+              className="Tile Block"
+            />
+          ))
+        : console.log("error")}
       <AnimatePresence
         mode="wait"
         onExitComplete={() => console.log("tile change")}
@@ -116,18 +142,16 @@ export default function Blockchain() {
           {blocks
             ? blocks.map((tile, index) => (
                 <Tile
-                  key={tile.txid}
-                  text={tile.txid}
-                  isVisible={tile.isVisible ?? true}
+                  key={tile.txid|| index}
+                  text={`TXID: ${tile.txid}`}
+                  isVisible={tile.isVisible}
                   onClick={() => handleTileClick(tile)}
                   className="Tile"
                 />
               ))
             : console.log("error")}
         </motion.div>
-        
       </AnimatePresence>
-      
     </div>
   );
 }
