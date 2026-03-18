@@ -13,7 +13,21 @@ port = 8000
 
 class TileRequest(BaseModel):
     text:str
-    
+class TxStatus(BaseModel):
+    confirmed: bool
+    block_height: int
+    block_hash: str
+    block_time: int
+
+class TxItem(BaseModel):
+    txid: str
+    incoming: int
+    outgoing: int
+    net: int
+    status: TxStatus
+    isVisible: bool
+class TxRequest(BaseModel):
+    txids: list[TxItem]
 #Block height 
 # https://blockchain.info/block-height/$block_height?format=json
 
@@ -63,34 +77,41 @@ def tile_click(body: TileRequest):
 def get_tiles():
     return [{"text":"Floor 1", "isVisible":True},{"text":"Floor 2", "isVisible":True},{"text":"Floor 3", "isVisible":True},{"text":"Ground Floor", "isVisible":True}]
 
-
+@app.post('/transactionInfo')
+def get_txidInfo(payload:TxRequest):
+    final_data=[]
+    for txid_obj in payload.txids:
+        data = requests.get(f'https://blockstream.info/api/tx/{txid_obj.txid}')
+        if data.status_code==200:
+            data = data.json()
+            print(data)
+            final_data.append(data)
+    return final_data
 #returns hash at blockheight
 @app.get("/block/{blockHeight}")
 def get_block(blockHeight: int)->dict:
     return blockWalk(blockHeight)
 
-@app.get('/rawblock/{hash}')
-def getRawBlock(hash):
-    try:
-        url = requests.get(f'https://blockchain.info/rawblock/{hash}')
-        if url.status_code==200:
-            data = url.json()
-            return data
-    except Exception as e:
-        logger.error(f"[getRawBlock]Error: {e}")
+
 
 def blockWalk(blockHeight: int)->dict:
     try:
-        url = f'https://blockstream.info/api/blocks/{blockHeight}'
+        url = f'https://blockstream.info/api/block-height/{blockHeight}'
         data = requests.get(url)
+        
         if data.status_code==200:
-            data = data.json()
-            if data:
-                return data[0]
+            
+            print(data.text)
+            if data.text:
+                return {"id":data.text}
             else:
-                return []
+                return {"id":"NA"}
+        else:
+            return {"id":"NA"}
     except Exception as e:
+        
         print(f"[blockWalk] Error: {e}")
+        return {"id":"NA"}
 
 @app.get("/transactions/{blockHash}")
 def get_transactions(blockHash)->list:

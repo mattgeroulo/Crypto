@@ -13,8 +13,8 @@
 }
 .Address.Input{
     display:flex;
-    
-    justify-items:center;
+    margin-left:5px;
+    text-align:center;
     flex:1;
     max-width:20vw;
     max-height:10vh;
@@ -35,7 +35,9 @@ background-color:rgb(129, 129, 129);
     margin-left:auto;
 }
 
-
+.Address.Height{
+    margin-left:5px;
+}
 .Content{
     display:flex;
     flex-direction:row;

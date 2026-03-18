@@ -11,47 +11,78 @@ export default function Blockchain() {
   const [address, setAddress] = useState([
     "1A1zP1eP5QGefi2DMPTfTL5SLmv7DivfNa",
   ]);
-  const [hash,setHash] = useState("0000000067a97a2a37b8f190a17f0221e9c3f4fa824ddffdc2e205eae834c8d7")
+  const [maxBlockHeight, setMaxBlockHeight] = useState(941064);
+  const [txids, setTxids] = useState([]);
+  const [hash, setHash] = useState(
+    "0000000067a97a2a37b8f190a17f0221e9c3f4fa824ddffdc2e205eae834c8d7",
+  );
   const navigate = useNavigate();
-  
+
   useEffect(() => {
     fetch(`http://localhost:8000/wallet/${address}`)
       .then((res) => res.json())
       .then((json) => {
-        const normalized =normalizeData(json);
+        const normalized = normalizeData(json);
         setBlocks(normalized);
         console.log(normalized);
       });
   }, [address]);
   //we want this to update the blocks list with a list of transactions on this hash value
-  useEffect(()=>{
-    fetch(`http://localhost:8000/transactions/${hash}`).then(res=>res.json()).then(json=>{
-      const normalized =normalizeData(json);setBlocks(normalized); console.log(`json transactions: ${JSON.stringify(json)}`)
-    })
-  },[hash])
-  function normalizeData(json){
-    return json.map((item) => {
-    if (typeof item === "string") {
-      return {
-        txid: item,
-        incoming: null,
-        outgoing: null,
-        net: null,
-        status: null,
-        isVisible: true,
-      };
-    }
+  useEffect(() => {
+    fetch(`http://localhost:8000/transactions/${hash}`)
+      .then((res) => res.json())
+      .then((json) => {
+        const normalized = normalizeData(json);
 
-    return {
-      txid: item.txid ?? item.hash ?? item.id ?? "",
-      incoming: item.incoming ?? null,
-      outgoing: item.outgoing ?? null,
-      net: item.net ?? null,
-      status: item.status ?? null,
-      isVisible: item.isVisible ?? true,
-    };
-  });
-    
+        console.log(`json transactions: ${JSON.stringify(json)}`);
+        console.log(normalized);
+        setBlocks(normalized);
+        console.log("Sending fetch request")
+        console.log(JSON.stringify({"txids":blocks}))
+        loadTransactions();
+      });
+  }, [hash]);
+  //Change this to a post request
+  async function loadTransactions() {
+    const transactions=[]
+    const res = await fetch(
+      `http://localhost:8000/transactionInfo`,
+      {
+        method:"POST",
+        headers:{
+          "Content-Type":"application/json",
+        },
+        body:JSON.stringify({"txids":blocks})
+      }
+    );
+    const txjson = await res.json();
+    transactions.push(txjson);
+
+    console.log(transactions);
+    setBlocks(transactions);
+  }
+  function normalizeData(json) {
+    return json.map((item) => {
+      if (typeof item === "string") {
+        return {
+          txid: item,
+          incoming: null,
+          outgoing: null,
+          net: null,
+          status: null,
+          isVisible: true,
+        };
+      }
+
+      return {
+        txid: item.txid ?? item.hash ?? item.id ?? "",
+        incoming: item.incoming ?? null,
+        outgoing: item.outgoing ?? null,
+        net: item.net ?? null,
+        status: item.status ?? null,
+        isVisible: item.isVisible ?? true,
+      };
+    });
   }
   function setBlockHeight(height) {
     try {
@@ -68,13 +99,12 @@ export default function Blockchain() {
           console.log("Starting tile change in setBlockHeight");
 
           console.log(`json here: ${JSON.stringify(json)}`);
-          
+
           setBitcoinBlock([json]);
-          setHash(json['id'])
+          setHash(json["id"]);
         });
       //Here on 3/15, need to update blocks to be changed on this request, need to take out update on address logic because its wrong
       //we are seeing transactions id's of a single bitcoin address, changing it to show block hash + transactions on that block
-      
     } catch (err) {
       console.error(err);
     }
@@ -113,20 +143,25 @@ export default function Blockchain() {
           type="number"
           step="1"
           min="0"
+          max={maxBlockHeight}
           placeholder="Get blocks at height:"
           value={blockHeight}
           onChange={(e) => setHeight(e.target.value)}
           onKeyDown={(e) => {
             if (e.key === "Enter") {
-              setBlockHeight(e.target.value);
+              const value = Number(e.target.value);
+              if (value <= maxBlockHeight && value >= 0) {
+                setBlockHeight(e.target.value);
+              }
             }
           }}
         />
+        <span className="Address Height"> Max Height: {maxBlockHeight}</span>
       </div>
       {bitcoinBlock
         ? bitcoinBlock.map((tile, index) => (
             <Tile
-              key={tile.id ||index}
+              key={tile.id || index}
               text={`Hash: ${tile.id}`}
               isVisible={true}
               onClick={() => handleTileClick(tile)}
@@ -142,7 +177,7 @@ export default function Blockchain() {
           {blocks
             ? blocks.map((tile, index) => (
                 <Tile
-                  key={tile.txid|| index}
+                  key={tile.txid || index}
                   text={`TXID: ${tile.txid}`}
                   isVisible={tile.isVisible}
                   onClick={() => handleTileClick(tile)}
