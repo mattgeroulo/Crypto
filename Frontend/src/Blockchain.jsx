@@ -35,16 +35,17 @@ export default function Blockchain() {
         const normalized = normalizeData(json);
 
         console.log(`json transactions: ${JSON.stringify(json)}`);
-        console.log(normalized);
+        console.log(`Normalized data setting to block: ${JSON.stringify(normalized,2,null)}`);
         setBlocks(normalized);
         console.log("Sending fetch request")
-        console.log(JSON.stringify({"txids":blocks}))
-        loadTransactions();
+        console.log(`txid block structure: ${JSON.stringify({"txids":blocks})}`);
+        //loadTransactions();
       });
   }, [hash]);
   //Change this to a post request
   async function loadTransactions() {
     const transactions=[]
+  
     const res = await fetch(
       `http://localhost:8000/transactionInfo`,
       {
